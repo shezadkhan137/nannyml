@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional
 
 import jinja2
 import yaml
-from pydantic import BaseModel, validator
+from pydantic import field_validator, BaseModel
 
 from nannyml._typing import Self
 from nannyml.exceptions import IOException
@@ -20,37 +20,37 @@ CONFIG_PATH_ENV_VAR_KEY = 'NML_CONFIG_PATH'
 
 class InputDataConfig(BaseModel):
     path: str
-    credentials: Optional[Dict[str, Any]]
-    read_args: Optional[Dict[str, Any]]
+    credentials: Optional[Dict[str, Any]] = None
+    read_args: Optional[Dict[str, Any]] = None
 
 
 class TargetDataConfig(InputDataConfig):
-    join_column: Optional[str]
+    join_column: Optional[str] = None
 
 
 class InputConfig(BaseModel):
     reference_data: InputDataConfig
     analysis_data: InputDataConfig
-    target_data: Optional[TargetDataConfig]
+    target_data: Optional[TargetDataConfig] = None
 
 
 class WriterConfig(BaseModel):
     type: str
-    params: Optional[Dict[str, Any]]
-    write_args: Optional[Dict[str, Any]]
+    params: Optional[Dict[str, Any]] = None
+    write_args: Optional[Dict[str, Any]] = None
 
 
 class ChunkerConfig(BaseModel):
-    chunk_size: Optional[int]
-    chunk_period: Optional[str]
-    chunk_count: Optional[int]
+    chunk_size: Optional[int] = None
+    chunk_period: Optional[str] = None
+    chunk_count: Optional[int] = None
 
 
 class IntervalSchedulingConfig(BaseModel):
-    weeks: Optional[int]
-    days: Optional[int]
-    hours: Optional[int]
-    minutes: Optional[int]
+    weeks: Optional[int] = None
+    days: Optional[int] = None
+    hours: Optional[int] = None
+    minutes: Optional[int] = None
 
 
 class CronSchedulingConfig(BaseModel):
@@ -58,14 +58,14 @@ class CronSchedulingConfig(BaseModel):
 
 
 class SchedulingConfig(BaseModel):
-    interval: Optional[IntervalSchedulingConfig]
-    cron: Optional[CronSchedulingConfig]
+    interval: Optional[IntervalSchedulingConfig] = None
+    cron: Optional[CronSchedulingConfig] = None
 
 
 class StoreConfig(BaseModel):
     path: str
-    credentials: Optional[Dict[str, Any]]
-    filename: Optional[str]
+    credentials: Optional[Dict[str, Any]] = None
+    filename: Optional[str] = None
     invalidate: bool = False
 
 
@@ -73,11 +73,12 @@ class CalculatorConfig(BaseModel):
     type: str
     name: Optional[str] = None
     enabled: Optional[bool] = True
-    outputs: Optional[List[WriterConfig]]
-    store: Optional[StoreConfig]
+    outputs: Optional[List[WriterConfig]] = None
+    store: Optional[StoreConfig] = None
     params: Dict[str, Any]
 
-    @validator('params')
+    @field_validator('params')
+    @classmethod
     def _parse_thresholds(cls, value: Dict[str, Any]):
         """Parse thresholds in params and convert them to :class:`Threshold`'s"""
         # Some calculators expect `thresholds` parameter as dict
@@ -94,11 +95,11 @@ class CalculatorConfig(BaseModel):
 
 
 class Config(BaseModel):
-    input: Optional[InputConfig]
+    input: Optional[InputConfig] = None
     calculators: List[CalculatorConfig]
-    scheduling: Optional[SchedulingConfig]
+    scheduling: Optional[SchedulingConfig] = None
 
-    ignore_errors: Optional[bool]
+    ignore_errors: Optional[bool] = None
 
     @classmethod
     @lru_cache(maxsize=1)
